@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Snake Game</title>
+    <style>
+      #game-board {
+        width: 400px;
+        height: 400px;
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Snake Game</h1>
+    <div id="game-board"></div>
+    <p>Score: <span id="score">0</span></p>
+
+    <script>
+      // Game variables
+      const boardSize = 20;
+      let snake = [{ x: 10, y: 10 }];
+      let direction = 'right';
+      let food = generateFood();
+      let score = 0;
+
+      // Game board element
+      const gameBoard = document.getElementById('game-board');
+      const scoreElement = document.getElementById('score');
+
+      // Render the game board
+      function render() {
+        gameBoard.innerHTML = '';
+        for (let y = 0; y < boardSize; y++) {
+          for (let x = 0; x < boardSize; x++) {
+            const cell = document.createElement('div');
+            cell.style.width = '20px';
+            cell.style.height = '20px';
+            cell.style.backgroundColor = '#eee';
+            gameBoard.appendChild(cell);
+          }
+        }
+
+        // Render the snake
+        snake.forEach((segment) => {
+          const snakeSegment = gameBoard.children[segment.y * boardSize + segment.x];
+          snakeSegment.style.backgroundColor = '#333';
+        });
+
+        // Render the food
+        const foodCell = gameBoard.children[food.y * boardSize + food.x];
+        foodCell.style.backgroundColor = 'red';
+      }
+
+      // Generate food at random coordinates
+      function generateFood() {
+        const x = Math.floor(Math.random() * boardSize);
+        const y = Math.floor(Math.random() * boardSize);
+        return { x, y };
+      }
+
+      // Check for collision with the snake's body or game board edges
+      function checkCollision() {
+        const head = snake[0];
+
+        // Check collision with snake's body
+        for (let i = 1; i < snake.length; i++) {
+          if (snake[i].x === head.x && snake[i].y === head.y) {
+            return true;
+          }
+        }
+
+        // Check collision with game board edges
+        if (head.x < 0 || head.x >= boardSize || head.y < 0 || head.y >= boardSize) {
+          return true;
+        }
+
+        return false;
+      }
+
+      // Update the game state
+      function update() {
+        const head = { x: snake[0].x, y: snake[0].y };
+
+        // Update snake position based on the direction
+        switch (direction) {
+          case 'up':
+            head.y--;
+            break;
+          case 'down':
+            head.y++;
+            break;
+          case 'left':
+            head.x--;
+            break;
+          case 'right':
+            head.x++;
+            break;
+        }
+
+        // Check collision with food
+        if (head.x === food.x && head.y === food.y) {
+          // Increase score
+          score += 10;
+          scoreElement.textContent = score;
+
+          // Generate new food
+          food = generateFood();
+        } else {
+          // Remove the tail segment
+          snake.pop();
+        }
+
+        // Check collision with self or game board edges
+        if (checkCollision()) {
+          alert('Game Over!');
+          resetGame();
